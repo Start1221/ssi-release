@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Person">
+
+  <!-- Use type aliases to avoid typing the full classname every time. -->
+  <typeAlias alias="Person" type="com.jshand.ssi.model.Person"/>
+
+  <!-- Result maps describe the mapping between the columns returned
+       from a query, and the class properties.  A result map isn't
+       necessary if the columns (or aliases) match to the properties 
+       exactly. -->
+  <resultMap id="Person" class="Person">
+     	<result property="personid"  column="personid" />
+		<result property="name"      column="name" />
+		<result property="age"  	 column="age" />
+		<result property="sex" 		 column="sex" />
+  </resultMap>
+
+  <!-- A simpler select example without the result map.  Note the 
+       aliases to match the properties of the target result class. -->
+  <select id="selectPersonById" parameterClass="String" resultClass="Person">
+   select personid, name, age, sex  from Person where personid= #id#
+  </select>
+   
+  <!-- Insert example, using the Person parameter class -->
+  <insert id="insertPerson" parameterClass="Person">
+    insert into Person
+  		(personid, name, age, sex )
+	values
+  		(#personid#, #name#, #age#, #sex# )
+  </insert>
+
+  <!-- Update example, using the Person parameter class -->
+  <update id="updatePerson" parameterClass="Person">
+    update Person
+   set name = #name#,
+       age = #age#,
+       sex = #sex#,
+ 	where personid = #personid#
+  </update>
+
+  <!-- Delete example, using an integer as the parameter class -->
+  <delete id="deletePersonById" parameterClass="String">
+    	delete from Person where personid = #personid#
+  </delete>
+  
+</sqlMap>
