@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<beans xmlns="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+    xmlns:aop="http://www.springframework.org/schema/aop" 
+    xmlns:tx="http://www.springframework.org/schema/tx"  
+    xmlns:context="http://www.springframework.org/schema/context"  
+    xsi:schemaLocation="   
+          http://www.springframework.org/schema/beans    
+          http://www.springframework.org/schema/beans/spring-beans-2.0.xsd 
+          http://www.springframework.org/schema/aop    
+          http://www.springframework.org/schema/aop/spring-aop-2.0.xsd   
+          http://www.springframework.org/schema/tx    
+          http://www.springframework.org/schema/tx/spring-tx-2.0.xsd" default-autowire="byName"> 
+
+	  <!-- 方便查找类路径下 sqlMapping.properties 并读取到内存中-->
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:sqlMapping.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- 数据源配制 -->
+	<bean id="dataSource"
+		class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName">
+			<value>${jdbc.driverClassName}</value>
+		</property>
+		<property name="url">
+			<value>${jdbc.url}</value>
+		</property>
+		<property name="username">
+			<value>${jdbc.username}</value>
+		</property>
+		<property name="password">
+			<value>${jdbc.password}</value>
+		</property>
+	</bean>
+
+	<!-- 此处应注入ibatis配置文件，而非sqlMap文件，否则会出现“there is no statement.....异常” -->
+	<bean id="sqlMapClient"
+		class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+		<property name="configLocation">
+			<value>classpath:SqlMapConfig.xml</value>
+		</property>
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	 
+	<bean id="testAction" class="com.jshand.ssi.action.TestAction">
+		<!-- <property name="testService" ref="testService"></property> -->
+	</bean>
+
+    <bean id="excelAction" class="com.jshand.ssi.action.ExcelAction">
+        <!-- <property name="testService" ref="testService"></property> -->
+    </bean>
+
+	
+	<bean id="testService" class="com.jshand.ssi.service.TestServiceImpl" >
+		<!-- <property name="personDao" ref="personDao"></property> -->
+	</bean>
+	
+	<bean id="personDao" class="com.jshand.ssi.dao.PersonDao" >
+		<!-- <property name="sqlMapClient" ref="sqlMapClient"></property> -->
+	</bean>
+	
+	
+	<!-- 事务的定义 -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource">
+			<ref local="dataSource" />
+		</property>
+	</bean>
+
+	<aop:config>
+		<aop:pointcut id="daoMethods" expression="execution(public * com.jshand.ssi.service.*.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="daoMethods" />
+	</aop:config>
+
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="*" rollback-for="Exception" propagation="REQUIRED" />
+		</tx:attributes>
+	</tx:advice>
+	
+	
+	
+	
+</beans>
